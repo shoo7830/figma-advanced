@@ -1,68 +1,35 @@
-# Genesis
+# figma-advanced 디자인 가이드
 
-## Overview
-An editorial precision interface for a community platform where developers discover, share, and download design system files. The aesthetic is quietly confident — bold display typography, generous spacing, and gallery-frame card surfaces. The mood is professional and modern without being sterile. High information density balanced by breathing room. 
+사용자가 제공한 구름 Vapor UI 레퍼런스의 시각 언어를 적용합니다.
+브랜드명은 figma-advanced로 유지하고, 정적 HTML과 공통 theme.css로 구현합니다.
+별도 UI 패키지는 설치하지 않습니다.
 
-## Colors
-- **Primary** (#6366F1): CTAs, active states, links, focus rings, interactive highlights — indigo
-- **Primary Hover** (#4F46E5): Darker indigo for hover states on primary elements
-- **Secondary** (#20970B): Reserved exclusively for the DESIGN.md brand highlight on the homepage — green
-- **Neutral** (#9C9C9C): Muted text, placeholders, timestamps, disabled states
-- **Background** (#FAFAFA): Page background, light warm gray
-- **Surface** (#FFFFFF): Cards, panels, modals, nav backdrop
-- **Text Primary** (#0A0A0A): Headings, body text, primary labels — near-black
-- **Text Secondary** (#6B6B6B): Descriptions, metadata, secondary labels
-- **Border** (#E8E8EC): Card borders, dividers, input borders — subtle and recessive
-- **Success** (#10B981): Published status, confirmations, positive indicators
-- **Warning** (#F59E0B): Pending states, caution banners
-- **Error** (#EF4444): Destructive actions, validation errors, rejected status
+## 색상
 
-## Typography
-- **Display Font**: General Sans — loaded from Fontshare
-- **Body Font**: DM Sans — loaded from Google Fonts
-- **Code Font**: JetBrains Mono — loaded from Google Fonts
+흰 캔버스와 카드(#FFFFFF), 보조 표면(#F7F7F7), 1px 경계(#E1E1E1)를 사용합니다.
+본문은 #262626, 보조 본문은 #4C4C4C, 작은 안내는 #5D5D5D입니다.
+강조·링크는 #0957C8, 포커스/브랜드 경계는 #2A72E5, 연한 강조 배경은 #C6E6FF입니다.
+성공은 #006C4B, 경고는 #8D4F00, 오류는 #BB1225입니다.
+UI 색상은 theme.css의 의미 기반 CSS 변수로 참조합니다.
 
-Display and heading text uses General Sans at bold weight with tight letter spacing (-0.03em to -0.04em). Body and UI text uses DM Sans at regular and medium weights. The contrast between the geometric display font and the humanist body font creates a refined editorial feel. Code blocks, API keys, and CLI commands use JetBrains Mono at regular weight.
+## 글꼴
 
-Type scale: Display 72px, Headline 60px, Section heading 32px, Subhead 24px, Body 15px, Small 13px, Caption 12px, Overline 11px uppercase.
+한국어와 본문은 Pretendard, 코드는 Fira Code를 사용합니다.
+모든 글자는 최소 14px입니다. 레퍼런스의 10px·12px 스타일도 이 사이트에서는 14px로 올립니다.
+본문 기본값은 16px, 코드는 14px / 22px입니다.
+제목은 64·48·38·32·24px 체계로 반응형 적용합니다.
+굵기는 400·500·700을 사용합니다.
 
-## Elevation
-This design uses minimal shadows. Cards rest flat with a 1px border and gain a subtle shadow on hover (0 8px 30px rgba(0,0,0,0.08)) combined with a -2px vertical lift. Primary buttons gain a tinted glow shadow on hover (0 4px 12px rgba(99,102,241,0.35)). The nav uses backdrop-blur rather than a shadow to convey elevation. Dropdowns and popovers use shadow-lg. Focus states use a 3px indigo ring (0 0 0 3px rgba(99,102,241,0.12)) rather than a shadow.
+## 컴포넌트와 상호작용
 
-## Components
-- **Buttons**: Primary uses indigo fill with white text, 6px radius, medium weight. Secondary uses transparent bg with 1px border, same radius. Ghost has no border or bg, just text color change on hover. Destructive uses red text with red border. All buttons shift up 1px on hover. Sizes: small (32px), medium (38px), large (44px).
-- **Cards**: White surface, 1px subtle border, 12px radius, overflow hidden. Kit preview cards have a 200px image area on top and a content area below with name, author avatar, and stats. Hover lifts the card 2px and increases shadow. Transition duration 200ms.
-- **Inputs**: 1px subtle border, surface background, 6px radius, 10px vertical and 14px horizontal padding, 14px font size. Focus: border turns indigo with a 3px rgba ring. Error: border turns red. Placeholder text uses muted color.
-- **Chips**: Tag chips use rounded-full (pill shape), gray-100 background, gray-600 text, 4px vertical and 12px horizontal padding, 12px font size. Active state: indigo background with white text. Status chips follow the same shape but use semantic colors (green for published, yellow for pending, red for rejected).
-- **Lists**: Stacked rows with 1px dividers between items. Each row is flex with space-between, 12px vertical and 16px horizontal padding. Hover: subtle background change.
-- **Checkboxes**: 20px size, rounded-full, gray-200 unchecked, indigo checked with white checkmark. Used as toggle switches for preferences.
-- **Tooltips**: Native browser tooltips via title attributes. No custom tooltip component currently.
-- **Navigation**: Sticky top nav with backdrop-blur, 56px height, 1px bottom border. Logo left, links center (desktop) or hamburger drawer (mobile), user avatar dropdown right. Nav links: 14px medium weight, hover shows bg-alt background.
-- **Search**: Global search triggered by ⌘K. Rendered as a rounded-xl bar with magnifying glass icon and keyboard shortcut badge.
+카드는 radius 8px, padding 24px, 1px 경계이며 그림자를 사용하지 않습니다.
+버튼은 radius 8px, 모바일 터치 높이는 최소 44px입니다.
+포커스는 2px 짙은 outline과 2px offset으로 표시합니다.
+배경 그라디언트, 유리/흐림 효과, hover 이동·확대 효과를 사용하지 않습니다.
+아이콘은 SVG를 사용합니다. 호버는 150ms 배경색 변화로 표현합니다.
+코드 블록은 독립적으로 가로 스크롤하고, 일반 본문은 화면 너비에 맞춰 줄바꿈합니다.
 
-## Spacing
-- Base unit: 4px
-- Scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96px
-- Component padding: small 8×12, medium 10×16, large 12×24
-- Section spacing: 32px mobile, 48px tablet, 64px desktop
-- Container max width: 1280px with 24px horizontal padding
-- Card grid gap: 20-24px
+## 원본 레퍼런스
 
-## Border Radius
-- 4px: Tags, chips, badges, inline code
-- 6px: Buttons, inputs, selects
-- 8px: Metadata cards, dropdowns, panels
-- 12px: Kit preview cards, search bar, featured sections
-- 9999px: Avatars, status dots, pill badges
-
-## Do's and Don'ts
-- Do use indigo (#6366F1) only for interactive elements — never for decoration or static text
-- Do maintain the 4px spacing grid for all padding, margins, and gaps
-- Do use General Sans for headings and DM Sans for body — never swap them
-- Do keep kit cards at 12px radius and buttons/inputs at 6px — don't mix these values
-- Do provide sufficient contrast in both light and dark modes — test both
-- Don't use pure black (#000000) or pure white (#FFFFFF) for text — use the defined palette values
-- Don't add decorative gradients or illustrations — the interactive dot grid is the only decorative element
-- Don't use shadows on static elements — reserve shadow elevation for hover and focus states
-- Don't use more than two font weights on a single screen
-- Don't place more than one primary (filled indigo) button in the same view section
+첨부받은 상세 문서는 [디자인 레퍼런스](./docs/design-reference.md)에 보관합니다.
+공식 문서: https://vapor-ui.goorm.io/

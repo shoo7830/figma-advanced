@@ -1,0 +1,68 @@
+/* Light theme derived from the supplied design reference. */
+:root {
+  color-scheme: light;
+  --color-background-canvas: #ffffff;
+  --color-background-secondary: #f7f7f7;
+  --color-background-primary: #c6e6ff;
+  --color-foreground-normal: #262626;
+  --color-foreground-secondary: #4c4c4c;
+  --color-foreground-hint: #5d5d5d;
+  --color-foreground-primary: #0957c8;
+  --color-border-normal: #e1e1e1;
+  --color-border-primary: #2a72e5;
+  --color-foreground-success: #006c4b;
+  --color-foreground-warning: #8d4f00;
+  --color-foreground-danger: #bb1225;
+  --bg: var(--color-background-canvas);
+  --surface: var(--color-background-canvas);
+  --surface-2: var(--color-background-secondary);
+  --border: var(--color-border-normal);
+  --primary: var(--color-foreground-primary);
+  --primary-muted: var(--color-background-primary);
+  --text-primary: var(--color-foreground-normal);
+  --text-secondary: var(--color-foreground-secondary);
+  --text-muted: var(--color-foreground-hint);
+  --green: var(--color-foreground-success);
+  --amber: var(--color-foreground-warning);
+  --red: var(--color-foreground-danger);
+  --mono: 'Fira Code', monospace;
+}
+body { font-size: 16px; line-height: 1.5; letter-spacing: -0.1px; }
+header { background: var(--bg); backdrop-filter: none; }
+a { color: var(--primary); }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--text-primary); outline-offset: 2px;
+}
+.hero-title { font-size: 64px; line-height: 1.3; letter-spacing: -0.4px; }
+.page-title { font-size: 48px; line-height: 1.3; letter-spacing: -0.4px; }
+.sec-title { font-size: 32px; line-height: 1.5; letter-spacing: -0.4px; }
+.card-title { font-size: 24px; line-height: 1.5; letter-spacing: -0.3px; }
+.card { border-radius: 8px; padding: 24px; box-shadow: none; transition: background 150ms; }
+.card:hover { background: var(--surface-2); transform: none; box-shadow: none; border-color: var(--border); }
+.card:hover .card-arrow { transform: none; }
+.tag-primary { border-color: var(--color-background-primary); }
+.tag-amber { background: #fff7e7; border-color: #ffdd95; }
+.codeblock { background: var(--surface-2); border-radius: 8px; }
+.codeblock-head { background: var(--surface); }
+.codeblock-body { white-space: pre; font-size: 14px; line-height: 22px; }
+.codeblock-copy { min-height: 32px; padding: 4px 12px; border-radius: 8px; font-weight: 500; }
+.codeblock-copy:hover { background: var(--surface-2); border-color: var(--border); }
+.comp-table td { border-color: var(--border); }
+.t-str, .t-green { color: var(--green); }
+.t-key, .prompt-text .kw { color: var(--primary); }
+.step-title { font-weight: 500; }
+.fade-up { opacity: 1; transform: none; animation: none; }
+.hero-visual svg { max-width: 100%; }
+footer a { text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+@media (max-width: 640px) {
+  .hero-title { font-size: 38px; line-height: 1.47; }
+  .page-title { font-size: 32px; line-height: 1.5; }
+  .sec-title { font-size: 24px; line-height: 1.5; }
+  .breadcrumb { flex-wrap: wrap; }
+  .header-counter { letter-spacing: 0; white-space: nowrap; }
+  .codeblock-copy { min-height: 44px; }
+  .output-row, .feat-row { flex-direction: column; align-items: flex-start; }
+  .output-file, .feat-name { min-width: 0; overflow-wrap: anywhere; }
+  footer { gap: 16px; flex-wrap: wrap; }
+}

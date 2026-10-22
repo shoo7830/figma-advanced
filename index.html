@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Figma × AI — 고도화 허브</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
 
@@ -13,8 +13,8 @@
 
     :root {
       --bg:      #0a0a0f;
-      --surface: #111118;
-      --border:  #1f1f2e;
+      --surface: #ffffff;
+      --border:  #e1e1e1;
 
       --primary:       #6366f1;
       --primary-muted: rgba(99,102,241,0.1);
@@ -24,9 +24,9 @@
 
       --text-primary:   #f0f0f5;
       --text-secondary: #8888a0;
-      --text-muted:     #3d3d55;
+      --text-muted:     #5d5d5d;
 
-      --mono: 'JetBrains Mono', monospace;
+      --mono: 'Fira Code', monospace;
       --sans: 'Pretendard Variable', 'Pretendard', sans-serif;
     }
 
@@ -52,7 +52,7 @@
 
     .logo {
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 14px;
       color: var(--text-muted);
       letter-spacing: 0.04em;
       display: flex; align-items: center; gap: 8px;
@@ -65,7 +65,7 @@
 
     .header-right {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 14px;
       color: var(--text-muted);
       letter-spacing: 0.06em;
     }
@@ -89,7 +89,7 @@
 
     .hero-label {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 14px;
       color: var(--primary);
       letter-spacing: 0.15em;
       text-transform: uppercase;
@@ -175,7 +175,7 @@
 
     .card-num {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 14px;
       color: var(--text-muted);
       letter-spacing: 0.06em;
       margin-bottom: 20px;
@@ -209,7 +209,7 @@
 
     .tag {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 14px;
       padding: 3px 8px;
       border-radius: 4px;
       background: var(--bg);
@@ -252,7 +252,7 @@
 
     .footer-text {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 14px;
       color: var(--text-muted);
     }
 
@@ -279,6 +279,7 @@
     .d5 { animation-delay: 0.36s; }
     .d6 { animation-delay: 0.44s; }
   </style>
+  <link rel="stylesheet" href="./theme.css" />
 </head>
 <body>
 
@@ -305,44 +306,44 @@
       <svg width="420" height="300" viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
 
         <!-- ── Figma node ── -->
-        <rect x="8" y="60" width="110" height="140" rx="12" fill="#111118" stroke="#1f1f2e" stroke-width="1.5"/>
+        <rect x="8" y="60" width="110" height="140" rx="12" fill="#ffffff" stroke="#e1e1e1" stroke-width="1.5"/>
         <image href="https://static.figma.com/uploads/3214f8f4f9e232539e7f89f2f34bd066db442f69" x="29" y="84" width="52" height="52"/>
-        <text x="63" y="218" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6a6a88" letter-spacing="0.06em">figma</text>
+        <text x="63" y="218" text-anchor="middle" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d" letter-spacing="0.06em">figma</text>
 
         <!-- ── Arrow 1 ── -->
-        <line x1="122" y1="130" x2="148" y2="130" stroke="#2a2a3e" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <polygon points="148,125 158,130 148,135" fill="#2a2a3e"/>
+        <line x1="122" y1="130" x2="148" y2="130" stroke="#c6c6c6" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="148,125 158,130 148,135" fill="#c6c6c6"/>
 
         <!-- ── JSON node ── -->
-        <rect x="160" y="60" width="120" height="140" rx="12" fill="#111118" stroke="#1f1f2e" stroke-width="1.5"/>
-        <text x="176" y="92"  font-family="JetBrains Mono, monospace" font-size="11" fill="#6366f1">{</text>
-        <text x="183" y="108" font-family="JetBrains Mono, monospace" font-size="10" fill="#a5b4fc">"layout"</text>
-        <text x="183" y="122" font-family="JetBrains Mono, monospace" font-size="10" fill="#d0d0e0">: "flex",</text>
-        <text x="183" y="136" font-family="JetBrains Mono, monospace" font-size="10" fill="#a5b4fc">"gap"</text>
-        <text x="183" y="150" font-family="JetBrains Mono, monospace" font-size="10" fill="#d0d0e0">: 16,</text>
-        <text x="183" y="164" font-family="JetBrains Mono, monospace" font-size="10" fill="#a5b4fc">"fill"</text>
-        <text x="183" y="178" font-family="JetBrains Mono, monospace" font-size="10" fill="#86efac">: "#6366f1"</text>
-        <text x="176" y="192" font-family="JetBrains Mono, monospace" font-size="11" fill="#6366f1">}</text>
-        <text x="220" y="218" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6a6a88" letter-spacing="0.06em">json</text>
+        <rect x="160" y="60" width="120" height="140" rx="12" fill="#ffffff" stroke="#e1e1e1" stroke-width="1.5"/>
+        <text x="176" y="92"  font-family="Fira Code, monospace" font-size="14" fill="#6366f1">{</text>
+        <text x="183" y="108" font-family="Fira Code, monospace" font-size="14" fill="#0957c8">"layout"</text>
+        <text x="183" y="122" font-family="Fira Code, monospace" font-size="14" fill="#4c4c4c">: "flex",</text>
+        <text x="183" y="136" font-family="Fira Code, monospace" font-size="14" fill="#0957c8">"gap"</text>
+        <text x="183" y="150" font-family="Fira Code, monospace" font-size="14" fill="#4c4c4c">: 16,</text>
+        <text x="183" y="164" font-family="Fira Code, monospace" font-size="14" fill="#0957c8">"fill"</text>
+        <text x="183" y="178" font-family="Fira Code, monospace" font-size="14" fill="#006c4b">: "#6366f1"</text>
+        <text x="176" y="192" font-family="Fira Code, monospace" font-size="14" fill="#6366f1">}</text>
+        <text x="220" y="218" text-anchor="middle" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d" letter-spacing="0.06em">json</text>
 
         <!-- ── Arrow 2 ── -->
-        <line x1="284" y1="130" x2="310" y2="130" stroke="#2a2a3e" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <polygon points="310,125 320,130 310,135" fill="#2a2a3e"/>
+        <line x1="284" y1="130" x2="310" y2="130" stroke="#c6c6c6" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="310,125 320,130 310,135" fill="#c6c6c6"/>
 
         <!-- ── Code node ── -->
-        <rect x="322" y="60" width="90" height="140" rx="12" fill="#111118" stroke="#1f1f2e" stroke-width="1.5"/>
-        <text x="334" y="90"  font-family="JetBrains Mono, monospace" font-size="9.5" fill="#a5b4fc">&lt;Card</text>
-        <text x="334" y="104" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6a6a88">  gap=</text>
-        <text x="334" y="118" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#86efac">  {16}</text>
-        <text x="334" y="132" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6a6a88">  bg=</text>
-        <text x="334" y="146" font-family="JetBrains Mono, monospace" font-size="9" fill="#86efac">  "#6366f1"</text>
-        <text x="334" y="160" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#a5b4fc">&gt;</text>
-        <text x="334" y="174" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6a6a88">  ...</text>
-        <text x="334" y="188" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#a5b4fc">&lt;/Card&gt;</text>
-        <text x="367" y="218" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6a6a88" letter-spacing="0.06em">code</text>
+        <rect x="322" y="60" width="90" height="140" rx="12" fill="#ffffff" stroke="#e1e1e1" stroke-width="1.5"/>
+        <text x="334" y="90"  font-family="Fira Code, monospace" font-size="14" fill="#0957c8">&lt;Card</text>
+        <text x="334" y="104" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d">  gap=</text>
+        <text x="334" y="118" font-family="Fira Code, monospace" font-size="14" fill="#006c4b">  {16}</text>
+        <text x="334" y="132" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d">  bg=</text>
+        <text x="334" y="146" font-family="Fira Code, monospace" font-size="14" fill="#006c4b">  "#6366f1"</text>
+        <text x="334" y="160" font-family="Fira Code, monospace" font-size="14" fill="#0957c8">&gt;</text>
+        <text x="334" y="174" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d">  ...</text>
+        <text x="334" y="188" font-family="Fira Code, monospace" font-size="14" fill="#0957c8">&lt;/Card&gt;</text>
+        <text x="367" y="218" text-anchor="middle" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d" letter-spacing="0.06em">code</text>
 
         <!-- ── bottom label ── -->
-        <text x="210" y="268" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#3d3d55" letter-spacing="0.1em">AI interprets data, not design</text>
+        <text x="210" y="268" text-anchor="middle" font-family="Fira Code, monospace" font-size="14" fill="#5d5d5d" letter-spacing="0.1em">AI interprets data, not design</text>
       </svg>
     </div>
   </section>
@@ -359,7 +360,7 @@
           <span class="tag tag-primary">Claude Code</span>
           <span class="tag">Design Context</span>
         </div>
-        <div class="card-arrow">↗</div>
+        <svg class="card-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
       </a>
 
       <a href="https://snappy-cyclone-pkx185t.tmp.now" target="_blank" rel="noopener" class="card fade-up d5">
@@ -371,7 +372,7 @@
           <span class="tag tag-amber">Design QA</span>
           <span class="tag">External ↗</span>
         </div>
-        <div class="card-arrow">↗</div>
+        <svg class="card-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
       </a>
 
       <a href="./skill.html" class="card fade-up d6">
@@ -383,7 +384,7 @@
           <span class="tag">Skill Install</span>
           <span class="tag">Prompt Guide</span>
         </div>
-        <div class="card-arrow">↗</div>
+        <svg class="card-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
       </a>
 
     </div>
@@ -393,7 +394,7 @@
     <span class="footer-text">
       © 2026 Gabia
     </span>
-    <span class="footer-text">v1</span>
+    <a class="footer-text" href="./DESIGN.md" target="_blank" rel="noopener">디자인 가이드 · DESIGN.md</a>
   </footer>
 
 </body>

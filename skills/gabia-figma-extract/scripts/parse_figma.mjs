@@ -13,11 +13,26 @@
  * 의존성: Node.js 내장 모듈만 사용 (별도 설치 불필요)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
-import { join, dirname, basename } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, openSync, closeSync, constants } from 'fs';
+import { join, dirname, basename, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Treat Figma names as data, never as output paths.
+function validateFilenamePart(value) {
+  if (!value || /[\\/\x00-\x1f\x7f]/.test(value) || value === '.' || value === '..') {
+    throw new Error(`안전하지 않은 출력 파일 이름: ${JSON.stringify(value)}`);
+  }
+}
+
+function writeOutput(path, content) {
+  if (dirname(resolve(path)) !== resolve(PARSED_DIR)) {
+    throw new Error('출력 경로가 지정 폴더를 벗어났습니다.');
+  }
+  const fd = openSync(path, constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW, 0o600);
+  try { writeFileSync(fd, content); } finally { closeSync(fd); }
+}
 
 // ─── CLI 인자 파싱 ───────────────────────────────────────────────────────────
 
@@ -319,6 +334,9 @@ function parsePrefix(prefix, isRaw = false) {
     ? sections.filter(s => s.name === ONLY_SEC)
     : sections;
 
+  validateFilenamePart(prefix);
+  targets.forEach(sec => validateFilenamePart(sec.name));
+
   for (const sec of targets) {
     const extraLoose = buckets[sec.name] ?? [];
     const output = {
@@ -335,7 +353,7 @@ function parsePrefix(prefix, isRaw = false) {
     };
 
     const jsonPath = join(PARSED_DIR, `${prefix}_${sec.name}.json`);
-    writeFileSync(jsonPath, JSON.stringify(output, null, 2));
+    writeOutput(jsonPath, JSON.stringify(output, null, 2));
 
     const specLines = [
       `# ${sec.name} — ${prefix} (${sec.width}×${sec.height})`,
@@ -354,7 +372,7 @@ function parsePrefix(prefix, isRaw = false) {
     }
 
     const specPath = join(PARSED_DIR, `${prefix}_${sec.name}.spec.txt`);
-    writeFileSync(specPath, specLines.join('\n'));
+    writeOutput(specPath, specLines.join('\n'));
 
     const jsonKb = Math.round(readFileSync(jsonPath).length / 1024);
     const specKb = Math.round(readFileSync(specPath).length / 1024);
@@ -389,7 +407,7 @@ function parsePrefix(prefix, isRaw = false) {
     }),
   ];
   const indexPath = join(PARSED_DIR, `${prefix}_index.md`);
-  writeFileSync(indexPath, indexLines.join('\n'));
+  writeOutput(indexPath, indexLines.join('\n'));
   console.log(`  ✓ index: ${indexPath}`);
 
   console.log(`[${prefix}] 완료 → ${PARSED_DIR}/`);

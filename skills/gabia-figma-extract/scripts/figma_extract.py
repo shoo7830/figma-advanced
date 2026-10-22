@@ -76,10 +76,8 @@ def figma_get(path: str, token: str) -> dict:
     url = f"https://api.figma.com/v1{path}"
     req = urllib.request.Request(url, headers={"X-Figma-Token": token})
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
     try:
-        with urllib.request.urlopen(req, context=ctx) as resp:
+        with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
             return json.loads(resp.read())
     except urllib.error.HTTPError as e:
         body = e.read().decode()
@@ -102,9 +100,7 @@ def fetch_image_url(file_key: str, node_id: str, token: str, scale: int = 2) -> 
 def download_file(url: str, path: Path) -> None:
     """URL에서 바이너리 파일 다운로드."""
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    with urllib.request.urlopen(url, context=ctx) as resp:
+    with urllib.request.urlopen(url, context=ctx, timeout=30) as resp:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(resp.read())
     size_kb = path.stat().st_size / 1024

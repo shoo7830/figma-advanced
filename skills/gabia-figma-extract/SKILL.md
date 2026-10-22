@@ -12,7 +12,7 @@ PC/TB/MB Figma 시안에서 raw JSON과 이미지 에셋을 추출하고, 섹션
 
 ```
 1. 스크립트 경로 확인
-2. FIGMA_TOKEN 확인 (.zshrc)
+2. FIGMA_TOKEN 환경변수 존재 확인
 3. 폴더명 입력 (필수, 중복 경고 포함)
 4. PC / TB / MB URL 입력 (각각 필수)
 5. 이미지 모음 프레임 URL 입력 (선택)
@@ -43,18 +43,11 @@ CWD는 사용자의 현재 작업 디렉토리 그대로 유지한다.
 
 ## Phase 2: FIGMA_TOKEN 확인
 
-```bash
-grep -E '^export FIGMA_TOKEN=' ~/.zshrc | tail -1 | sed 's/export FIGMA_TOKEN=["'"'"']\(.*\)["'"'"']/\1/'
-```
-
-- 값이 정상적으로 추출되면 이후 단계에서 `FIGMA_TOKEN` 환경변수로 사용한다.
-- 빈 문자열이 반환되면(없거나 파싱 실패) 사용자에게 입력을 요청한다:
-
-  > `FIGMA_TOKEN`이 `.zshrc`에 없습니다. Figma Personal Access Token을 입력해주세요.
-  > (Figma → 계정 설정 → Security → Personal access tokens)
-
-  - 입력하면: `echo 'export FIGMA_TOKEN="<입력값>"' >> ~/.zshrc` 로 저장 후 계속 진행
-  - 입력 거부(빈 값 또는 취소)하면: "FIGMA_TOKEN이 없어 실행을 중단합니다." 출력 후 종료
+현재 실행 환경의 `FIGMA_TOKEN` 존재 여부만 확인한다. 값을 출력하거나 로그에 남기지 않는다.
+없으면 사용자가 로컬 터미널 또는 비밀 관리 도구에서 환경변수를 설정하도록 안내한다.
+토큰을 채팅으로 요청하거나 셸 명령에 실제 값을 삽입하지 않는다.
+`.zshrc` 등 설정 파일을 읽어 토큰 값을 도구 출력으로 노출하지 않는다.
+인증서 검증은 항상 유지한다. 사내 CA가 필요하면 `SSL_CERT_FILE`로 신뢰할 CA 파일을 지정한다.
 
 ---
 
@@ -139,7 +132,7 @@ MB URL     : <MB_URL>
 ## Phase 7: figma_extract.py 실행
 
 ```bash
-FIGMA_TOKEN="<Phase 2에서 읽은 값>" python3 "$SCRIPTS_DIR/figma_extract.py" \
+python3 "$SCRIPTS_DIR/figma_extract.py" \
   --url "<PC_URL>" \
   --url "<TB_URL>" \
   --url "<MB_URL>" \
