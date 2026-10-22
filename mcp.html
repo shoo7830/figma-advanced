@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Figma MCP — Claude Code 연동 가이드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --surface-2: #16161e;
+      --border:    #1f1f2e;
+
+      --primary:   #6366f1;
+      --amber:     #f59e0b;
+      --green:     #10b981;
+      --red:       #ef4444;
+
+      --text-primary:   #f0f0f5;
+      --text-secondary: #d0d0e0;
+      --text-muted:     #6a6a88;
+
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Pretendard Variable', 'Pretendard', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+    /* PROGRESS */
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--primary); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* HEADER */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 64px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      background: rgba(10,10,15,0.92);
+    }
+
+    .breadcrumb {
+      font-family: var(--mono); font-size: 12px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .breadcrumb a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    .breadcrumb a:hover { color: var(--primary); }
+    .breadcrumb-sep { color: var(--text-muted); }
+    .breadcrumb-current { color: var(--primary); }
+
+    .header-counter {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.08em;
+      transition: color 0.25s;
+    }
+    .header-counter.active { color: var(--text-secondary); }
+
+    /* DOT NAV */
+    .dot-nav {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      z-index: 90; display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    @media (max-width: 1100px) { .dot-nav { display: none; } }
+
+    .dot-item { position: relative; cursor: pointer; padding: 4px; }
+
+    .dot-item .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--border); transition: background 0.2s, transform 0.2s;
+    }
+    .dot-item.active .dot { background: var(--primary); transform: scale(1.5); }
+    .dot-item:hover .dot { background: var(--text-muted); }
+
+    .dot-tip {
+      position: absolute; right: 20px; top: 50%; transform: translateY(-50%) translateX(4px);
+      font-family: var(--mono); font-size: 11px; color: var(--text-secondary);
+      white-space: nowrap; background: var(--surface); border: 1px solid var(--border);
+      padding: 3px 8px; border-radius: 4px; pointer-events: none;
+      opacity: 0; transition: opacity 0.15s, transform 0.15s;
+    }
+    .dot-item:hover .dot-tip { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+    /* LAYOUT */
+    .content {
+      max-width: 960px; margin: 0 auto; padding: 80px 120px 120px;
+    }
+    @media (max-width: 1200px) { .content { padding: 80px 80px 120px; } }
+    @media (max-width: 860px) { .content { padding: 48px 24px 80px; } header { padding: 0 24px; } }
+
+    /* PAGE INTRO */
+    .page-kicker {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .page-title {
+      font-size: 60px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.0;
+      margin-bottom: 20px;
+    }
+    .page-desc {
+      font-size: 17px; color: var(--text-secondary); line-height: 1.8;
+      margin-bottom: 72px; max-width: 580px;
+    }
+
+    /* SECTION */
+    .sec { margin-bottom: 64px; scroll-margin-top: 72px; }
+
+    .sec-label {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .sec-title {
+      font-size: 28px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.2;
+      margin-bottom: 18px; color: var(--text-primary);
+    }
+    .sec-body {
+      font-size: 16px; color: var(--text-primary); line-height: 1.85; margin-bottom: 14px;
+    }
+    .sec-body + .sec-body { margin-top: -4px; }
+    .sec-body code {
+      font-family: var(--mono); font-size: 12px; color: var(--text-primary);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px;
+    }
+    .sec-body a { color: var(--primary); text-decoration: none; }
+    .sec-body a:hover { text-decoration: underline; }
+
+    /* NOTE — subtle, no accent bar */
+    .note {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px; margin: 16px 0;
+      font-size: 15px; color: var(--text-secondary); line-height: 1.75;
+    }
+    .note strong { color: var(--text-primary); font-weight: 600; }
+    .note code {
+      font-family: var(--mono); font-size: 11px; color: var(--text-primary);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 5px; border-radius: 4px;
+    }
+    .note a { color: var(--primary); text-decoration: none; }
+
+    /* DIVIDER */
+    .sec-divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    /* CODE BLOCK */
+    .codeblock {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin: 16px 0;
+    }
+    .codeblock-head {
+      padding: 8px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .codeblock-title { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .codeblock-copy {
+      font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+      background: none; border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+    }
+    .codeblock-copy:hover { color: var(--primary); border-color: rgba(99,102,241,0.4); }
+    .codeblock-body {
+      padding: 18px 20px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9;
+      overflow-x: auto;
+    }
+
+    .t-comment { color: var(--text-muted); }
+    .t-prompt  { color: var(--primary); user-select: none; }
+    .t-cmd     { color: var(--text-primary); }
+    .t-str     { color: #86efac; }
+    .t-key     { color: #a5b4fc; }
+    .t-val     { color: var(--amber); }
+    .t-dim     { color: var(--text-muted); }
+
+    /* FEATURE LIST */
+    .feat-list { list-style: none; margin: 16px 0; display: flex; flex-direction: column; gap: 0; }
+    .feat-item {
+      display: flex; gap: 16px; align-items: baseline;
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+    }
+    .feat-item:first-child { border-top: 1px solid var(--border); }
+    .feat-name { font-family: var(--mono); font-size: 12px; color: var(--text-primary); min-width: 180px; flex-shrink: 0; }
+    .feat-desc { font-size: 15px; color: var(--text-primary); line-height: 1.65; }
+
+    /* STEPS */
+    .steps { display: flex; flex-direction: column; margin: 16px 0; gap: 0; }
+    .step { display: flex; gap: 20px; position: relative; }
+    .step:not(:last-child)::after {
+      content: ''; position: absolute; left: 11px; top: 28px;
+      width: 1px; height: calc(100% - 4px); background: var(--border);
+    }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid var(--border); background: var(--surface-2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+      position: relative; z-index: 1; margin-top: 2px;
+    }
+    .step-body { padding-bottom: 24px; }
+    .step-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .step-desc { font-size: 15px; color: var(--text-primary); line-height: 1.75; }
+    .step-desc code {
+      font-family: var(--mono); font-size: 11px; color: var(--text-primary);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 5px; border-radius: 4px;
+    }
+
+    /* FADE */
+    .fade-up { opacity: 0; transform: translateY(14px); animation: fu 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+    @keyframes fu { to { opacity: 1; transform: none; } }
+    .d1 { animation-delay: 0.04s; }
+    .d2 { animation-delay: 0.1s; }
+    .d3 { animation-delay: 0.17s; }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="dot-nav" id="dotNav"></nav>
+
+<header>
+  <div class="breadcrumb">
+    <a href="./index.html">figma-advanced</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">mcp</span>
+  </div>
+  <div class="header-counter" id="headerCounter"></div>
+</header>
+
+<main class="content">
+
+  <div class="page-kicker fade-up d1">01 / 03 — MCP Server</div>
+  <h1 class="page-title fade-up d2">Figma MCP</h1>
+  <p class="page-desc fade-up d3">
+    Figma 공식 MCP 서버를 Claude Code에 등록하면 디자인 파일을 바로 읽고
+    컴포넌트 구조를 코드로 넘길 수 있습니다.
+  </p>
+
+  <section class="sec" id="s1" data-label="개요">
+    <div class="sec-label">01</div>
+    <h2 class="sec-title">Figma MCP란?</h2>
+    <p class="sec-body">
+      MCP(Model Context Protocol)는 AI가 외부 도구에 직접 붙는 개방형 프로토콜입니다.
+      Figma MCP 서버를 등록하면 Claude Code가 <code>get_design_context</code>,
+      <code>get_screenshot</code> 등으로 Figma 파일을 실시간으로 읽습니다.
+    </p>
+    <div class="note">
+      <strong>언제 MCP를 쓰나</strong> — 디자인 시안 전체 구조 탐색, 컴포넌트 라이브러리 확인에 좋습니다.
+      픽셀 단위 정확도가 필요하면 <a href="./skill.html">JSON 추출도 함께 쓰세요</a>.
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s2" data-label="주요 기능">
+    <div class="sec-label">02</div>
+    <h2 class="sec-title">주요 기능</h2>
+    <ul class="feat-list">
+      <li class="feat-item">
+        <span class="feat-name">get_design_context</span>
+        <span class="feat-desc">노드의 레이아웃, 컴포넌트 구조, 스타일을 JSON으로 뽑아줍니다.</span>
+      </li>
+      <li class="feat-item">
+        <span class="feat-name">get_screenshot</span>
+        <span class="feat-desc">특정 프레임의 스크린샷을 캡처해 눈으로 확인할 때 씀.</span>
+      </li>
+      <li class="feat-item">
+        <span class="feat-name">get_libraries</span>
+        <span class="feat-desc">팀 공유 컴포넌트 라이브러리 목록을 가져와 Code Connect 매핑에 씀.</span>
+      </li>
+      <li class="feat-item">
+        <span class="feat-name">Code Connect</span>
+        <span class="feat-desc">Figma 컴포넌트와 코드 컴포넌트를 양쪽으로 이어줍니다.</span>
+      </li>
+    </ul>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s3" data-label="MCP 서버 등록">
+    <div class="sec-label">03</div>
+    <h2 class="sec-title">MCP 서버 등록</h2>
+    <p class="sec-body">
+      <code>~/.claude/settings.json</code> 또는 프로젝트 <code>.claude/settings.json</code>에 아래 내용을 추가합니다.
+    </p>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">~/.claude/settings.json</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-config')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-config">
+<span class="t-dim">{</span>
+  <span class="t-key">"mcpServers"</span><span class="t-dim">: {</span>
+    <span class="t-key">"figma"</span><span class="t-dim">: {</span>
+      <span class="t-key">"command"</span><span class="t-dim">:</span> <span class="t-str">"npx"</span><span class="t-dim">,</span>
+      <span class="t-key">"args"</span><span class="t-dim">: [</span><span class="t-str">"-y"</span><span class="t-dim">,</span> <span class="t-str">"@figma/mcp"</span><span class="t-dim">],</span>
+      <span class="t-key">"env"</span><span class="t-dim">: {</span>
+        <span class="t-key">"FIGMA_ACCESS_TOKEN"</span><span class="t-dim">:</span> <span class="t-str">"figd_xxxxxxxxxxxxxxxx"</span>
+      <span class="t-dim">}</span>
+    <span class="t-dim">}</span>
+  <span class="t-dim">}</span>
+<span class="t-dim">}</span>
+      </div>
+    </div>
+    <div class="note">
+      CLI로 추가하려면: <code>claude mcp add figma --transport http https://mcp.figma.com/v1/sse</code><br />
+      브라우저 OAuth로 등록됩니다.
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s4" data-label="Token 발급">
+    <div class="sec-label">04</div>
+    <h2 class="sec-title">Access Token 발급</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Figma 계정 설정 접속</div>
+          <div class="step-desc">figma.com → 우측 상단 프로필 → Settings</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Personal Access Token 탭</div>
+          <div class="step-desc">Security 섹션 → Personal access tokens</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">토큰 생성</div>
+          <div class="step-desc">Generate new token → 이름 <code>claude-code-mcp</code> → Scopes: <code>File content: read</code></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">settings.json에 입력</div>
+          <div class="step-desc">발급된 <code>figd_...</code> 토큰을 <code>FIGMA_ACCESS_TOKEN</code>에 붙여넣습니다.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s5" data-label="연결 확인">
+    <div class="sec-label">05</div>
+    <h2 class="sec-title">연결 확인</h2>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">Claude Code</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-verify')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-verify">
+<span class="t-comment"># MCP 서버 상태 확인</span>
+<span class="t-prompt">❯</span> <span class="t-cmd">/mcp</span>
+
+<span class="t-comment"># Figma URL로 컨텍스트 테스트</span>
+<span class="t-prompt">❯</span> <span class="t-cmd">이 Figma 파일의 컴포넌트 구조를 알려줘: https://www.figma.com/design/XXXXX/...</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s6" data-label="워크플로우">
+    <div class="sec-label">06</div>
+    <h2 class="sec-title">기본 워크플로우</h2>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">대화 예시</span>
+      </div>
+      <div class="codeblock-body">
+<span class="t-comment"># 1. 프레임 URL로 컴포넌트 구현 요청</span>
+<span class="t-prompt">❯</span> <span class="t-cmd">이 Figma 프레임을 React 컴포넌트로 만들어줘</span>
+  <span class="t-str">https://www.figma.com/design/ABC.../page?node-id=1-23</span>
+
+<span class="t-comment"># 2. 특정 컴포넌트 스타일 확인</span>
+<span class="t-prompt">❯</span> <span class="t-cmd">Header 컴포넌트의 색상과 타이포그래피 값을 알려줘</span>
+
+<span class="t-comment"># 3. 스크린샷 확인</span>
+<span class="t-prompt">❯</span> <span class="t-cmd">node-id=2-45 스크린샷 보여줘</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s7" data-label="한계 및 주의">
+    <div class="sec-label">07</div>
+    <h2 class="sec-title">한계 및 주의사항</h2>
+    <p class="sec-body">
+      Figma API는 분당 요청 제한이 있습니다. AI가 반복 호출하면 <code>429 Too Many Requests</code> 오류가 납니다.
+      대용량 파일은 <a href="./skill.html">JSON Exporter 스킬</a>로 한 번 뽑아서 로컬 파일로 쓰세요.
+    </p>
+    <p class="sec-body">
+      없는 요소를 만들거나 값을 잘못 읽기도 합니다.
+      픽셀 단위 정확도가 필요하면 JSON 추출도 함께 쓰세요.
+    </p>
+  </section>
+
+</main>
+
+<script>
+  const sections = Array.from(document.querySelectorAll('.sec'));
+  const total = sections.length;
+  const dotNav = document.getElementById('dotNav');
+  const counter = document.getElementById('headerCounter');
+  const bar = document.getElementById('progressBar');
+
+  sections.forEach(sec => {
+    const item = document.createElement('div');
+    item.className = 'dot-item';
+    item.innerHTML = `<div class="dot"></div><span class="dot-tip">${sec.dataset.label}</span>`;
+    item.addEventListener('click', () => sec.scrollIntoView({ behavior: 'smooth' }));
+    dotNav.appendChild(item);
+  });
+
+  const dots = dotNav.querySelectorAll('.dot-item');
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const i = sections.indexOf(e.target);
+      dots.forEach(d => d.classList.remove('active'));
+      dots[i]?.classList.add('active');
+      counter.textContent = `${String(i + 1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
+      counter.classList.add('active');
+    });
+  }, { rootMargin: '-25% 0px -65% 0px' });
+
+  sections.forEach(s => obs.observe(s));
+
+  window.addEventListener('scroll', () => {
+    bar.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%';
+  });
+
+  function copyBlock(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.innerText.replace(/❯\s*/g, '').trim()).then(() => {
+      btn.textContent = 'copied';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>

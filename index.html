@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Figma × AI — 고도화 허브</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a0f;
+      --surface: #111118;
+      --border:  #1f1f2e;
+
+      --primary:       #6366f1;
+      --primary-muted: rgba(99,102,241,0.1);
+
+      --amber: #f59e0b;
+      --green: #10b981;
+
+      --text-primary:   #f0f0f5;
+      --text-secondary: #8888a0;
+      --text-muted:     #3d3d55;
+
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Pretendard Variable', 'Pretendard', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 64px;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      background: rgba(10,10,15,0.9);
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .logo-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary);
+    }
+
+    .header-right {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 120px 64px 80px;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 64px;
+    }
+
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: 1fr; padding: 64px 24px 48px; }
+      header { padding: 0 24px; }
+      .list-section { padding: 0 24px 80px; }
+    }
+
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--primary);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+      margin-bottom: 32px;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: var(--primary);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      max-width: 440px;
+      font-weight: 400;
+    }
+
+    .hero-visual {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      opacity: 0.9;
+    }
+
+    .hero-visual svg {
+      max-width: 420px;
+      width: 100%;
+      height: auto;
+    }
+
+    /* ── CARD SECTION ── */
+    .card-section {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 48px 64px 120px;
+    }
+
+    @media (max-width: 860px) {
+      .card-section { padding: 32px 24px 80px; }
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 960px) {
+      .card-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      border-color: rgba(99,102,241,0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+
+    .card-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      transition: color 0.15s;
+    }
+
+    .card:hover .card-title { color: var(--primary); }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      font-weight: 400;
+      flex: 1;
+    }
+
+    .card-tags {
+      display: flex; gap: 6px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .tag-primary {
+      color: var(--primary);
+      background: var(--primary-muted);
+      border-color: rgba(99,102,241,0.2);
+    }
+
+    .tag-amber {
+      color: var(--amber);
+      background: rgba(245,158,11,0.08);
+      border-color: rgba(245,158,11,0.2);
+    }
+
+    .card-arrow {
+      position: absolute;
+      bottom: 24px; right: 24px;
+      font-size: 16px;
+      color: var(--text-muted);
+      transition: color 0.15s, transform 0.15s;
+    }
+
+    .card:hover .card-arrow {
+      color: var(--primary);
+      transform: translate(2px, -2px);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+
+    .footer-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .footer-text a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .footer-text a:hover { color: var(--primary); }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .d1 { animation-delay: 0.05s; }
+    .d2 { animation-delay: 0.12s; }
+    .d3 { animation-delay: 0.2s; }
+    .d4 { animation-delay: 0.28s; }
+    .d5 { animation-delay: 0.36s; }
+    .d6 { animation-delay: 0.44s; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span class="logo-dot"></span>
+      gabia / o2c-platform
+    </div>
+    <div class="header-right">figma-advanced</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="hero-label fade-up d1">Figma × AI 고도화 허브</div>
+      <h1 class="hero-title fade-up d2">
+        Design to Code,<br />
+        <em>데이터로.</em>
+      </h1>
+      <p class="hero-sub fade-up d3">
+        Figma 시안을 JSON으로 고정해 AI가 멋대로 해석하지 못하게 막고,
+        구현만 시키는 방식.
+      </p>
+    </div>
+    <div class="hero-visual fade-up d3">
+      <svg width="420" height="300" viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ── Figma node ── -->
+        <rect x="8" y="60" width="110" height="140" rx="12" fill="#111118" stroke="#1f1f2e" stroke-width="1.5"/>
+        <image href="https://static.figma.com/uploads/3214f8f4f9e232539e7f89f2f34bd066db442f69" x="29" y="84" width="52" height="52"/>
+        <text x="63" y="218" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6a6a88" letter-spacing="0.06em">figma</text>
+
+        <!-- ── Arrow 1 ── -->
+        <line x1="122" y1="130" x2="148" y2="130" stroke="#2a2a3e" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="148,125 158,130 148,135" fill="#2a2a3e"/>
+
+        <!-- ── JSON node ── -->
+        <rect x="160" y="60" width="120" height="140" rx="12" fill="#111118" stroke="#1f1f2e" stroke-width="1.5"/>
+        <text x="176" y="92"  font-family="JetBrains Mono, monospace" font-size="11" fill="#6366f1">{</text>
+        <text x="183" y="108" font-family="JetBrains Mono, monospace" font-size="10" fill="#a5b4fc">"layout"</text>
+        <text x="183" y="122" font-family="JetBrains Mono, monospace" font-size="10" fill="#d0d0e0">: "flex",</text>
+        <text x="183" y="136" font-family="JetBrains Mono, monospace" font-size="10" fill="#a5b4fc">"gap"</text>
+        <text x="183" y="150" font-family="JetBrains Mono, monospace" font-size="10" fill="#d0d0e0">: 16,</text>
+        <text x="183" y="164" font-family="JetBrains Mono, monospace" font-size="10" fill="#a5b4fc">"fill"</text>
+        <text x="183" y="178" font-family="JetBrains Mono, monospace" font-size="10" fill="#86efac">: "#6366f1"</text>
+        <text x="176" y="192" font-family="JetBrains Mono, monospace" font-size="11" fill="#6366f1">}</text>
+        <text x="220" y="218" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6a6a88" letter-spacing="0.06em">json</text>
+
+        <!-- ── Arrow 2 ── -->
+        <line x1="284" y1="130" x2="310" y2="130" stroke="#2a2a3e" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="310,125 320,130 310,135" fill="#2a2a3e"/>
+
+        <!-- ── Code node ── -->
+        <rect x="322" y="60" width="90" height="140" rx="12" fill="#111118" stroke="#1f1f2e" stroke-width="1.5"/>
+        <text x="334" y="90"  font-family="JetBrains Mono, monospace" font-size="9.5" fill="#a5b4fc">&lt;Card</text>
+        <text x="334" y="104" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6a6a88">  gap=</text>
+        <text x="334" y="118" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#86efac">  {16}</text>
+        <text x="334" y="132" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6a6a88">  bg=</text>
+        <text x="334" y="146" font-family="JetBrains Mono, monospace" font-size="9" fill="#86efac">  "#6366f1"</text>
+        <text x="334" y="160" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#a5b4fc">&gt;</text>
+        <text x="334" y="174" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6a6a88">  ...</text>
+        <text x="334" y="188" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#a5b4fc">&lt;/Card&gt;</text>
+        <text x="367" y="218" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#6a6a88" letter-spacing="0.06em">code</text>
+
+        <!-- ── bottom label ── -->
+        <text x="210" y="268" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#3d3d55" letter-spacing="0.1em">AI interprets data, not design</text>
+      </svg>
+    </div>
+  </section>
+
+  <section class="card-section">
+    <div class="card-grid">
+
+      <a href="./mcp.html" class="card fade-up d4">
+        <div class="card-num">01 / 03</div>
+        <div class="card-title">Figma MCP</div>
+        <div class="card-desc">Claude Code에서 Figma 파일을 바로 읽어 디자인 맥락을 코드에 연결하는 MCP 서버 공식 가이드.</div>
+        <div class="card-tags">
+          <span class="tag tag-primary">MCP Server</span>
+          <span class="tag tag-primary">Claude Code</span>
+          <span class="tag">Design Context</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="https://landing-preflight-nqonaz.onestack.run/" target="_blank" rel="noopener" class="card fade-up d5">
+        <div class="card-num">02 / 03</div>
+        <div class="card-title">Design Preflight</div>
+        <div class="card-desc">코드 작업 전에 Figma 시안을 자동으로 훑습니다. 네이밍 규칙·Auto Layout·컴포넌트 일관성을 미리 잡아냅니다.</div>
+        <div class="card-tags">
+          <span class="tag tag-amber">Preflight</span>
+          <span class="tag tag-amber">Design QA</span>
+          <span class="tag">External ↗</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="./skill.html" class="card fade-up d6">
+        <div class="card-num">03 / 03</div>
+        <div class="card-title">Figma 고도화 스킬</div>
+        <div class="card-desc">JSON Exporter 스킬 설치, structure/design 분리 추출, AI 프롬프트 작성법까지 담았습니다.</div>
+        <div class="card-tags">
+          <span class="tag">figma-extract</span>
+          <span class="tag">Skill Install</span>
+          <span class="tag">Prompt Guide</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-text">
+      © 2026 Gabia O2C Platform —
+      <a href="https://confluence.gabia.com/spaces/o2cplaform/pages/246410612" target="_blank">Confluence 문서</a>
+    </span>
+    <span class="footer-text">v1</span>
+  </footer>
+
+</body>
+</html>

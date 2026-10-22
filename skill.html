@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Figma 고도화 스킬 — JSON Parser Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --surface-2: #16161e;
+      --border:    #1f1f2e;
+
+      --primary:   #6366f1;
+      --amber:     #f59e0b;
+      --green:     #10b981;
+      --red:       #ef4444;
+
+      --text-primary:   #f0f0f5;
+      --text-secondary: #d0d0e0;
+      --text-muted:     #6a6a88;
+
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Pretendard Variable', 'Pretendard', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+    .progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--primary); z-index: 200; transition: width 0.1s linear;
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 100;
+      padding: 0 64px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      background: rgba(10,10,15,0.92);
+    }
+
+    .breadcrumb {
+      font-family: var(--mono); font-size: 12px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .breadcrumb a { color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    .breadcrumb a:hover { color: var(--primary); }
+    .breadcrumb-sep { color: var(--text-muted); }
+    .breadcrumb-current { color: var(--primary); }
+
+    .header-counter {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.08em; transition: color 0.25s;
+    }
+    .header-counter.active { color: var(--text-secondary); }
+
+    .dot-nav {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      z-index: 90; display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    @media (max-width: 1100px) { .dot-nav { display: none; } }
+
+    .dot-item { position: relative; cursor: pointer; padding: 4px; }
+    .dot-item .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--border); transition: background 0.2s, transform 0.2s;
+    }
+    .dot-item.active .dot { background: var(--primary); transform: scale(1.5); }
+    .dot-item:hover .dot { background: var(--text-muted); }
+    .dot-tip {
+      position: absolute; right: 20px; top: 50%; transform: translateY(-50%) translateX(4px);
+      font-family: var(--mono); font-size: 11px; color: var(--text-secondary);
+      white-space: nowrap; background: var(--surface); border: 1px solid var(--border);
+      padding: 3px 8px; border-radius: 4px; pointer-events: none;
+      opacity: 0; transition: opacity 0.15s, transform 0.15s;
+    }
+    .dot-item:hover .dot-tip { opacity: 1; transform: translateY(-50%) translateX(0); }
+
+    .content {
+      max-width: 960px; margin: 0 auto; padding: 80px 120px 120px;
+    }
+    @media (max-width: 1200px) { .content { padding: 80px 80px 120px; } }
+    @media (max-width: 860px) { .content { padding: 48px 24px 80px; } header { padding: 0 24px; } }
+
+    .page-kicker {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .page-title {
+      font-size: 60px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.0;
+      margin-bottom: 20px;
+    }
+    .page-desc {
+      font-size: 17px; color: var(--text-secondary); line-height: 1.8;
+      margin-bottom: 72px; max-width: 580px;
+    }
+
+    .sec { margin-bottom: 64px; scroll-margin-top: 72px; }
+    .sec-label {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .sec-title {
+      font-size: 28px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.2;
+      margin-bottom: 18px; color: var(--text-primary);
+    }
+    .sec-body {
+      font-size: 16px; color: var(--text-primary); line-height: 1.85; margin-bottom: 14px;
+    }
+    .sec-body code {
+      font-family: var(--mono); font-size: 12px; color: var(--text-primary);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 4px;
+    }
+    .sec-body a { color: var(--primary); text-decoration: none; }
+    .sec-body a:hover { text-decoration: underline; }
+
+    .note {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 18px; margin: 16px 0;
+      font-size: 15px; color: var(--text-secondary); line-height: 1.75;
+    }
+    .note strong { color: var(--text-primary); font-weight: 600; }
+    .note code {
+      font-family: var(--mono); font-size: 11px; color: var(--text-primary);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 5px; border-radius: 4px;
+    }
+    .note a { color: var(--primary); text-decoration: none; }
+
+    .sec-divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    .codeblock {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin: 16px 0;
+    }
+    .codeblock-head {
+      padding: 8px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .codeblock-title { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .codeblock-copy {
+      font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+      background: none; border: 1px solid var(--border);
+      padding: 2px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+    }
+    .codeblock-copy:hover { color: var(--primary); border-color: rgba(99,102,241,0.4); }
+    .codeblock-body {
+      padding: 18px 20px; font-family: var(--mono); font-size: 12.5px; line-height: 1.9;
+      overflow-x: auto;
+    }
+
+    .t-comment { color: var(--text-muted); }
+    .t-prompt  { color: var(--primary); user-select: none; }
+    .t-cmd     { color: var(--text-primary); }
+    .t-str     { color: #86efac; }
+    .t-key     { color: #a5b4fc; }
+    .t-val     { color: var(--amber); }
+    .t-dim     { color: var(--text-muted); }
+    .t-green   { color: var(--green); }
+    .t-red     { color: var(--red); }
+
+    /* COMPARE TABLE */
+    .comp-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    .comp-table th {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-muted); padding: 10px 14px; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .comp-table td {
+      padding: 12px 14px; border-bottom: 1px solid rgba(31,31,46,0.8);
+      color: var(--text-primary); vertical-align: middle; font-size: 15px;
+    }
+    .comp-table tr:last-child td { border-bottom: none; }
+    .badge {
+      font-family: var(--mono); font-size: 11px;
+      padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+    }
+    .badge-on  { color: var(--green); background: rgba(16,185,129,0.08); }
+    .badge-off { color: var(--text-muted); background: var(--surface-2); }
+
+    /* STEPS */
+    .steps { display: flex; flex-direction: column; margin: 16px 0; }
+    .step { display: flex; gap: 20px; position: relative; }
+    .step:not(:last-child)::after {
+      content: ''; position: absolute; left: 11px; top: 28px;
+      width: 1px; height: calc(100% - 4px); background: var(--border);
+    }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid var(--border); background: var(--surface-2);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 10px; color: var(--text-muted);
+      position: relative; z-index: 1; margin-top: 2px;
+    }
+    .step-body { padding-bottom: 24px; }
+    .step-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .step-desc { font-size: 15px; color: var(--text-primary); line-height: 1.75; }
+    .step-desc code {
+      font-family: var(--mono); font-size: 11px; color: var(--text-primary);
+      background: var(--surface-2); border: 1px solid var(--border);
+      padding: 1px 5px; border-radius: 4px;
+    }
+
+    /* OUTPUT LABELS */
+    .output-row { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+    .output-item { display: flex; gap: 14px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .output-item:first-child { border-top: 1px solid var(--border); }
+    .output-file { font-family: var(--mono); font-size: 12px; color: var(--text-primary); min-width: 220px; flex-shrink: 0; }
+    .output-desc { font-size: 15px; color: var(--text-primary); line-height: 1.65; }
+
+    /* PROMPT */
+    .prompt-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 18px 20px; margin: 16px 0;
+    }
+    .prompt-step-label {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;
+    }
+    .prompt-text {
+      font-family: var(--mono); font-size: 12px; line-height: 1.85;
+      color: var(--text-secondary); white-space: pre-wrap;
+    }
+    .prompt-text .ph { color: var(--amber); }
+    .prompt-text .kw { color: #a5b4fc; }
+
+    .fade-up { opacity: 0; transform: translateY(14px); animation: fu 0.5s cubic-bezier(0.16,1,0.3,1) forwards; }
+    @keyframes fu { to { opacity: 1; transform: none; } }
+    .d1 { animation-delay: 0.04s; }
+    .d2 { animation-delay: 0.1s; }
+    .d3 { animation-delay: 0.17s; }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<nav class="dot-nav" id="dotNav"></nav>
+
+<header>
+  <div class="breadcrumb">
+    <a href="./index.html">figma-advanced</a>
+    <span class="breadcrumb-sep">/</span>
+    <span class="breadcrumb-current">skill</span>
+  </div>
+  <div class="header-counter" id="headerCounter"></div>
+</header>
+
+<main class="content">
+
+  <div class="page-kicker fade-up d1">03 / 03 — Skill</div>
+  <h1 class="page-title fade-up d2">Figma 고도화 스킬</h1>
+  <p class="page-desc fade-up d3">
+    Figma 시안(PC/TB/MB)을 반응형 페이지로 만드는 파이프라인.
+    커맨드 2줄이면 JSON 추출, 섹션 분할, AI 전달까지 끝납니다.
+  </p>
+
+  <section class="sec" id="s1" data-label="배경 및 문제">
+    <div class="sec-label">01</div>
+    <h2 class="sec-title">배경 및 문제</h2>
+    <p class="sec-body">
+      Figma REST API로 추출한 JSON을 그대로 AI에 전달하면 <strong>중간 요소가 빠지는 일</strong>이 반복됐습니다.
+    </p>
+    <table class="comp-table">
+      <thead>
+        <tr><th>문제</th><th>원인</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>컨텍스트 초과</td>
+          <td>뷰포트 하나에 600KB+ → AI 컨텍스트 한도 초과. 필요한 섹션 외 정보가 대부분을 차지</td>
+        </tr>
+        <tr>
+          <td>Loose 요소 누락</td>
+          <td>텍스트·벡터 노드 중 일부가 섹션 FRAME 밖에 위치. 섹션만 읽으면 자동 누락</td>
+        </tr>
+        <tr>
+          <td>이미지 유실</td>
+          <td><code>parseFills()</code>가 IMAGE 타입을 빈 배열로 반환 → 섹션 JSON에서 이미지 정보 소실</td>
+        </tr>
+        <tr>
+          <td>섹션 순서 미전달</td>
+          <td>파일을 하나씩 참조하고 순서를 별도로 설명해야 했음</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <strong>해결 전략</strong> — 섹션별 분할 + Loose 요소 자동 귀속 + 이미지 자동 다운로드 + 인덱스 파일로 순서 전달.
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s2" data-label="전체 파이프라인">
+    <div class="sec-label">02</div>
+    <h2 class="sec-title">전체 파이프라인</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">figma_extract.py — raw JSON + 이미지 추출</div>
+          <div class="step-desc">PC/TB/MB 프레임 URL과 이미지 모음 프레임 URL을 넘기면 raw.json과 images/*.png를 뽑아냅니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">parse_figma.mjs — 섹션 분할 + 인덱스 생성</div>
+          <div class="step-desc">섹션별 .json / .spec.txt 파일과 {시안}_index.md(섹션 순서 포함)를 만듭니다.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Claude에 인덱스 파일만 전달</div>
+          <div class="step-desc">@pc_index.md 하나로 섹션 순서, 파일 경로, 크기를 한꺼번에 넘깁니다.</div>
+        </div>
+      </div>
+    </div>
+    <div class="output-row">
+      <div class="output-item">
+        <span class="output-file">{시안}_raw.json</span>
+        <span class="output-desc">Figma 원본 JSON — 폰트/그라디언트/이미지 fill 확인 시 사용</span>
+      </div>
+      <div class="output-item">
+        <span class="output-file">images/*.png</span>
+        <span class="output-desc">이미지 에셋 자동 다운로드</span>
+      </div>
+      <div class="output-item">
+        <span class="output-file">{시안}_{섹션}.spec.txt</span>
+        <span class="output-desc">사람·AI가 읽기 좋은 텍스트 형식 — 컴포넌트 구현 시 1차 사용</span>
+      </div>
+      <div class="output-item">
+        <span class="output-file">{시안}_{섹션}.json</span>
+        <span class="output-desc">완전한 섹션 트리 — 정확한 수치 확인 시 사용</span>
+      </div>
+      <div class="output-item">
+        <span class="output-file">{시안}_index.md</span>
+        <span class="output-desc">섹션 순서 인덱스 — Claude에 이것 하나만 @참조</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s3" data-label="환경 설정">
+    <div class="sec-label">03</div>
+    <h2 class="sec-title">환경 설정 (최초 1회)</h2>
+    <p class="sec-body">figma.com → Settings → Security → Personal access tokens에서 뽑습니다.</p>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">~/.zshrc</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-token')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-token">
+<span class="t-cmd">export FIGMA_TOKEN=<span class="t-val">"figd_xxxxxxxxxxxxxxxxxxxx"</span></span>
+<span class="t-prompt">❯</span> <span class="t-cmd">source ~/.zshrc</span>
+      </div>
+    </div>
+    <div class="note">
+      사내 네트워크에서 SSL 인증서 검증이 실패할 수 있습니다.
+      스킬 내부에서 우회하므로 따로 설정 안 해도 됩니다.
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s4" data-label="커맨드 레퍼런스">
+    <div class="sec-label">04</div>
+    <h2 class="sec-title">커맨드 레퍼런스</h2>
+
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">Step 1 — raw JSON + 이미지 추출</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-extract')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-extract">
+<span class="t-cmd">python3 skill/scripts/figma_extract.py \</span>
+<span class="t-cmd">  --url <span class="t-val">"PC 프레임 URL"</span> \</span>
+<span class="t-cmd">  --url <span class="t-val">"TB 프레임 URL"</span> \</span>
+<span class="t-cmd">  --url <span class="t-val">"MB 프레임 URL"</span> \</span>
+<span class="t-cmd">  --image-node <span class="t-val">"이미지 모음 프레임 URL"</span> \</span>
+<span class="t-cmd">  --types raw,images \</span>
+<span class="t-cmd">  --output ./figma</span>
+      </div>
+    </div>
+
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">Step 2 — 섹션 분할 + 인덱스 생성</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-parse')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-parse">
+<span class="t-cmd">node parse_figma.mjs --dir ./figma --out ./figma/parsed</span>
+      </div>
+    </div>
+
+    <p class="sec-body" style="margin-top:20px;">parse_figma.mjs 추가 옵션:</p>
+    <table class="comp-table">
+      <thead>
+        <tr><th>옵션</th><th>설명</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>--prefix desktop_1920</code></td><td>특정 뷰포트만 처리</td></tr>
+        <tr><td><code>--section Sec_00_Hero</code></td><td>특정 섹션만 처리</td></tr>
+        <tr><td><code>--section-prefix Sec</code></td><td>섹션 이름 prefix 필터</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s5" data-label="파서 핵심 기능">
+    <div class="sec-label">05</div>
+    <h2 class="sec-title">파서가 하는 일</h2>
+
+    <p class="sec-body"><strong>섹션 분할</strong> — 루트 너비의 30% 이상인 FRAME을 섹션으로 잡아 파일로 따로 저장합니다.</p>
+    <p class="sec-body"><strong>Loose 요소 귀속</strong> — 섹션 FRAME 밖에 떠 있는 TEXT, VECTOR, RECTANGLE, GROUP 노드를 y좌표 기준으로 가장 가까운 섹션에 붙입니다. 붙은 요소는 <code>loose_overlays</code> 키로 분리 저장됩니다.</p>
+
+    <p class="sec-body" style="margin-top:20px;">spec.txt 출력 예시:</p>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">pc_Sec_00_Hero.spec.txt</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-spec')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-spec">
+<span class="t-comment">[FRAME] Sec_00_Hero  1920x890  @(0,90)</span>
+<span class="t-comment">  fill: #b8c6dc</span>
+<span class="t-comment">  [FRAME] Container  660x381  @(630,230)</span>
+<span class="t-comment">    layout: VERTICAL  gap=80</span>
+<span class="t-comment">    [TEXT] Main_heading  622x148  @(649,284)</span>
+<span class="t-comment">      text: "RTX 4090 서버 / 월 30% 할인된 가격으로"</span>
+<span class="t-comment">      fill: #000000</span>
+<span class="t-comment">    [FRAME] btn_CTA  383x64  @(768,554)</span>
+<span class="t-comment">      fill: gradient_linear [#0037cc to rgba(5,86,203,0.80)]</span>
+<span class="t-comment">      borderRadius: 40px</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s6" data-label="Claude 프롬프트 가이드">
+    <div class="sec-label">06</div>
+    <h2 class="sec-title">Claude 프롬프트 가이드</h2>
+
+    <div class="prompt-block">
+      <div class="prompt-step-label">전체 섹션 반응형 구현</div>
+      <div class="prompt-text"><span class="kw">PC: </span><span class="ph">@figma/parsed/pc_index.md</span>
+<span class="kw">TB: </span><span class="ph">@figma/parsed/tb_index.md</span>
+<span class="kw">MB: </span><span class="ph">@figma/parsed/mb_index.md</span>
+
+세 시안을 반응형으로 구현해줘.
+브레이크포인트: 768px(TB), 1280px(PC)
+이미지: figma/images/ 폴더 참고</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-step-label">특정 섹션만 구현</div>
+      <div class="prompt-text"><span class="ph">@figma/parsed/pc_Sec_00_Hero.json</span>
+<span class="ph">@figma/parsed/pc_Sec_00_Hero.spec.txt</span>
+
+위 섹션만 Vue 컴포넌트로 구현해줘.</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-step-label">텍스트 누락 검수</div>
+      <div class="prompt-text"><span class="ph">@figma/parsed/pc_index.md</span> 의 모든 섹션 JSON text 필드와
+<span class="ph">@pages/event/xxx/index.vue</span> 의 텍스트를 비교해서
+누락된 텍스트 리포트만 해줘. 수정은 하지 마.</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-step-label">공통 구현 규칙 (매번 포함 권장)</div>
+      <div class="prompt-text">- px 수치 그대로 사용 (rem 변환 금지)
+- 기준 너비: PC 1920px / TB 768px / MB 390px
+- 한국어 텍스트 word-break: keep-all
+- 이미지는 figma/images/ 폴더 참고</div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s7" data-label="이미지 연결">
+    <div class="sec-label">07</div>
+    <h2 class="sec-title">이미지 연결 방법</h2>
+    <p class="sec-body">
+      <code>figma/image-mapping.json</code>의 <code>manual_mapping</code> 섹션을 채웁니다. 최초 1회 작성 후 재사용합니다.
+    </p>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">figma/image-mapping.json</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-mapping')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-mapping">
+<span class="t-key">"manual_mapping"</span><span class="t-cmd">: {</span>
+<span class="t-cmd">  </span><span class="t-key">"intro"</span><span class="t-cmd">:      </span><span class="t-str">"mainbanner.png"</span><span class="t-cmd">,</span>
+<span class="t-cmd">  </span><span class="t-key">"img"</span><span class="t-cmd">:        </span><span class="t-str">"img01.png"</span><span class="t-cmd">,</span>
+<span class="t-cmd">  </span><span class="t-key">"contact-us"</span><span class="t-cmd">: </span><span class="t-str">"contact-usbg-1.png"</span>
+<span class="t-cmd">}</span>
+      </div>
+    </div>
+    <div class="note">
+      이미지 자동 매핑이 안 되는 이유는 <strong>디자인 레이어명 ≠ 에셋 파일명</strong> 때문입니다.
+      디자이너와 레이어 명명 규칙을 맞추면 이 단계를 건너뜁니다.
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s8" data-label="디자이너 가이드">
+    <div class="sec-label">08</div>
+    <h2 class="sec-title">디자이너 가이드 — 자동화 컨벤션</h2>
+    <p class="sec-body">파이프라인이 제대로 돌려면 아래 규칙을 지켜주세요.</p>
+
+    <p class="sec-body"><strong>섹션은 FRAME으로 묶기</strong></p>
+    <table class="comp-table">
+      <thead>
+        <tr><th>타입</th><th>섹션 인식</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>FRAME</td><td><span class="badge badge-on">인식됨 ✓</span></td></tr>
+        <tr><td>GROUP</td><td><span class="badge badge-off">인식 안 됨 ✗</span></td></tr>
+        <tr><td>INSTANCE</td><td><span class="badge badge-off">인식 안 됨 ✗</span></td></tr>
+      </tbody>
+    </table>
+
+    <p class="sec-body" style="margin-top:20px;"><strong>FRAME 이름 규칙</strong> — <code>Sec_{순서}_{섹션명}</code></p>
+    <div class="note">
+      예시: <code>Sec_01_Hero</code> / <code>Sec_02_Benefits</code> / <code>Sec_03_Footer</code><br />
+      순서 번호는 두 자리(01, 02, ...)로 맞춰야 출력 순서가 보장됩니다.<br />
+      <code>Sec_</code> prefix 없는 FRAME(예: gnb, bg)은 섹션으로 안 봅니다.
+    </div>
+
+    <p class="sec-body" style="margin-top:20px;"><strong>반응형 프레임 이름 규칙</strong></p>
+    <table class="comp-table">
+      <thead>
+        <tr><th>기기</th><th>프레임 이름</th><th>기준 너비</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>모바일</td><td><code>MB</code></td><td>360px</td></tr>
+        <tr><td>태블릿</td><td><code>TB</code></td><td>768px</td></tr>
+        <tr><td>PC</td><td><code>PC</code></td><td>1920px</td></tr>
+      </tbody>
+    </table>
+
+    <p class="sec-body" style="margin-top:20px;"><strong>작업 완료 체크리스트</strong></p>
+    <div class="codeblock">
+      <div class="codeblock-head">
+        <span class="codeblock-title">핸드오프 전 확인</span>
+        <button class="codeblock-copy" onclick="copyBlock(this, 'b-checklist')">copy</button>
+      </div>
+      <div class="codeblock-body" id="b-checklist">
+<span class="t-green">[ ]</span> <span class="t-cmd">모든 섹션이 FRAME 타입인가?</span>
+<span class="t-green">[ ]</span> <span class="t-cmd">FRAME 이름이 Sec_숫자_이름 형식인가?</span>
+<span class="t-green">[ ]</span> <span class="t-cmd">텍스트·이미지 등 요소가 모두 섹션 FRAME 안에 있는가?</span>
+<span class="t-green">[ ]</span> <span class="t-cmd">최상위에 loose 요소가 남아 있지 않은가?</span>
+<span class="t-green">[ ]</span> <span class="t-cmd">MB / TB / PC 프레임이 각각 분리되어 있는가?</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="sec-divider" />
+
+  <section class="sec" id="s9" data-label="개선 이력">
+    <div class="sec-label">09</div>
+    <h2 class="sec-title">개선 이력</h2>
+    <p class="sec-body">두 차례 개선을 거쳐 지금 파이프라인이 됐습니다.</p>
+    <table class="comp-table">
+      <thead>
+        <tr><th>항목</th><th>이전</th><th>이후</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>이미지 다운로드</td>
+          <td>Figma UI에서 수동 내보내기</td>
+          <td><code>--image-node</code> 옵션으로 자동 다운로드</td>
+        </tr>
+        <tr>
+          <td>IMAGE fill 처리</td>
+          <td>parseFills()에서 미처리 → 유실</td>
+          <td><code>type: image, imageSlot</code> 형태로 보존</td>
+        </tr>
+        <tr>
+          <td>섹션 순서 전달</td>
+          <td>파일 하나씩 참조, 순서 별도 설명</td>
+          <td><code>{시안}_index.md</code> 하나로 전달</td>
+        </tr>
+        <tr>
+          <td>추출 커맨드</td>
+          <td>여러 단계 수동</td>
+          <td>2줄 커맨드로 표준화</td>
+        </tr>
+        <tr>
+          <td>이미지 연결</td>
+          <td>완전 수동</td>
+          <td>image-mapping.json에 1회 작성 후 재사용</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <strong>아직 못 고친 것</strong> — 이미지 slotId 자동 매핑 안 됨 (레이어명 규칙 합의 필요),
+      F-top(네비게이션) 섹션 미배치 (<code>--section-prefix</code>로 수동 지정),
+      <code>styledTextSegments</code> 안 됨 (REST API 한계, Plugin API 전용).
+    </div>
+  </section>
+
+</main>
+
+<script>
+  const sections = Array.from(document.querySelectorAll('.sec'));
+  const total = sections.length;
+  const dotNav = document.getElementById('dotNav');
+  const counter = document.getElementById('headerCounter');
+  const bar = document.getElementById('progressBar');
+
+  sections.forEach(sec => {
+    const item = document.createElement('div');
+    item.className = 'dot-item';
+    item.innerHTML = `<div class="dot"></div><span class="dot-tip">${sec.dataset.label}</span>`;
+    item.addEventListener('click', () => sec.scrollIntoView({ behavior: 'smooth' }));
+    dotNav.appendChild(item);
+  });
+
+  const dots = dotNav.querySelectorAll('.dot-item');
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const i = sections.indexOf(e.target);
+      dots.forEach(d => d.classList.remove('active'));
+      dots[i]?.classList.add('active');
+      counter.textContent = `${String(i + 1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`;
+      counter.classList.add('active');
+    });
+  }, { rootMargin: '-25% 0px -65% 0px' });
+
+  sections.forEach(s => obs.observe(s));
+
+  window.addEventListener('scroll', () => {
+    bar.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100) + '%';
+  });
+
+  function copyBlock(btn, id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.innerText.replace(/❯\s*/g, '').trim()).then(() => {
+      btn.textContent = 'copied';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
